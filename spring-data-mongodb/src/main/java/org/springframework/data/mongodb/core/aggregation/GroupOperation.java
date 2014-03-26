@@ -58,6 +58,21 @@ public class GroupOperation implements FieldsExposingAggregationOperation {
 		this.operations = new ArrayList<Operation>();
 	}
 
+    /**
+     * Creates a new {@link GroupOperation} including the given {@link Fields}.
+     *
+     * @param fields must not be {@literal null}.
+     * @param synthetic
+     */
+    public GroupOperation(Fields fields, boolean synthetic) {
+
+        if (!synthetic)
+            this.idFields = ExposedFields.nonSynthetic(fields);
+        else
+            this.idFields = ExposedFields.synthetic(fields);
+        this.operations = new ArrayList<Operation>();
+    }
+
 	/**
 	 * Creates a new {@link GroupOperation} from the given {@link GroupOperation}.
 	 * 
@@ -283,9 +298,19 @@ public class GroupOperation implements FieldsExposingAggregationOperation {
 
 		BasicDBObject operationObject = new BasicDBObject();
 
-		if (idFields.exposesNoNonSyntheticFields()) {
+		if (idFields.exposesNoFields()) {
 
-			operationObject.put(Fields.UNDERSCORE_ID, null);
+            operationObject.put(Fields.UNDERSCORE_ID, null);
+
+        } else if (idFields.exposesNoNonSyntheticFields()) {
+
+            BasicDBObject inner = new BasicDBObject();
+            for (ExposedField field : idFields) {
+                FieldReference reference = context.getReference(field);
+                inner.put(field.getName(), reference.toString());
+            }
+
+            operationObject.put(Fields.UNDERSCORE_ID, inner);
 
 		} else if (idFields.exposesSingleNonSyntheticFieldOnly()) {
 

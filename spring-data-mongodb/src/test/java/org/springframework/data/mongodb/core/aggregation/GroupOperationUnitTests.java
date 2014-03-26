@@ -79,6 +79,17 @@ public class GroupOperationUnitTests {
 		assertThat(groupClause.get(UNDERSCORE_ID), is((Object) "$a"));
 	}
 
+    @Test
+    public void createsGroupOperationWithSyntheticSingleFieldWithAlias() {
+
+        GroupOperation operation = new GroupOperation(Fields.from(field("$hour","date")), true);
+
+        DBObject groupClause = extractDbObjectFromGroupOperation(operation);
+        DBObject idClause = DBObjectUtils.getAsDBObject(groupClause, UNDERSCORE_ID);
+
+        assertThat(idClause, is((DBObject) new BasicDBObject("$hour", "$date")));
+    }
+
 	@Test
 	public void createsGroupOperationWithMultipleFields() {
 
@@ -90,6 +101,19 @@ public class GroupOperationUnitTests {
 		assertThat(idClause.get("a"), is((Object) "$a"));
 		assertThat(idClause.get("b"), is((Object) "$c"));
 	}
+
+    @Test
+    public void groupDateAggregationFactoryMethodWithFieldWithAliasAndSumOperation() {
+
+        GroupOperation groupOperation = Aggregation.groupDateAggregation(Fields.from(field("$month", "date"))).sum("e").as("e");
+
+        DBObject groupClause = extractDbObjectFromGroupOperation(groupOperation);
+        DBObject idClause = DBObjectUtils.getAsDBObject(groupClause, UNDERSCORE_ID);
+        DBObject eOp = DBObjectUtils.getAsDBObject(groupClause, "e");
+
+        assertThat(idClause, is((DBObject) new BasicDBObject("$month", "$date")));
+        assertThat(eOp, is((DBObject) new BasicDBObject("$sum", "$e")));
+    }
 
 	@Test
 	public void groupFactoryMethodWithMultipleFieldsAndSumOperation() {

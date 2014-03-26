@@ -158,6 +158,16 @@ public class Aggregation {
 		return new GroupOperation(fields);
 	}
 
+    /**
+     * Creates a new {@link GroupOperation} for the given {@link Fields} where DateAggregation is allowed.
+     *
+     * @param fields must not be {@literal null}.
+     * @return
+     */
+    public static GroupOperation groupDateAggregation(Fields fields) {
+        return new GroupOperation(fields, true);
+    }
+
 	/**
 	 * Factory method to create a new {@link SortOperation} for the given {@link Sort}.
 	 * 
